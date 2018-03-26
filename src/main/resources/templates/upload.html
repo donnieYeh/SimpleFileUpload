@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>simple upload</title>
+</head>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.js"></script>
+<link href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.css" rel="stylesheet">
+
+<style type="text/css" >
+    #uploadBox {
+        border: .25rem dashed deepskyblue;
+        min-height: 80px;
+        margin: 100px;
+        padding: 20px;
+    }
+    .uploadBox_active {
+        border: .25rem dashed red;
+    }
+</style>
+<body>
+    <div id="app">
+        <div id="uploadBox">
+            <h1>dorp file here to upload~</h1>
+        </div>
+    </div>
+    <div class="fileBox template" style="display: none">
+        <span class="fileName">fileName</span>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                <span class="sr-only">60% Complete</span>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript">
+$(function () {
+    var drobox  = $("#uploadBox");
+    drobox.get(0).addEventListener("dragover",dropEnter);
+    drobox.get(0).addEventListener("dragleave",dragout);
+    drobox.get(0).addEventListener("drop",drop);
+});
+
+var files = [];
+
+function dropEnter(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    $("#uploadBox").addClass("uploadBox_active");
+}
+function dragout(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    $("#uploadBox").removeClass("uploadBox_active");
+}
+function drop(e) {
+    console.dir(e);
+    e.stopPropagation();
+    e.preventDefault();
+    $("#uploadBox").removeClass("uploadBox_active");
+    var dt = e.dataTransfer;
+    for (var i = 0; i !== dt.files.length; i++) {
+        uploadFile(dt.files[i]);
+    }
+}
+
+function uploadFile(file) {
+    console.dir(file);
+    var item = {
+        name : file.name,
+        uploadPercentage : 0,
+        id: files.length+1
+    }
+    files.push(item);
+    render(item);
+
+    var fd = new FormData();
+    fd.append('file', file);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/doUpload', true);
+    xhr.upload.addEventListener('progress', function (e) {
+        item.uploadPercentage = Math.round((e.loaded * 100) / e.total);
+        render(item);
+    }, false);
+    xhr.send(fd);
+
+
+}
+function render(file) {
+    var fileNode = $("#file"+file.id);
+    if(fileNode.length <= 0){
+        fileNode = $(".template").clone().attr("id","file"+file.id);
+        fileNode.removeClass("template").show();
+        $(fileNode).find(".fileName").text(file.name);
+        $("#uploadBox").append(fileNode);
+    }
+    $(fileNode).find(".progress-bar").attr("aria-valuenow",file.uploadPercentage).css("width",file.uploadPercentage+"%")
+}
+</script>
+</html>
