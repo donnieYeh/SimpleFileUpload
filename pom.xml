@@ -54,6 +54,8 @@
     </repositories>
 
 	<build>
+        <finalName>simpleFileUpload</finalName>
+        <directory>D:\webApps</directory>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
